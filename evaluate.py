@@ -1,5 +1,5 @@
 from reportgenerator import ReportGenerator
-from data_loaders import m3comp
+from data_loaders import m3comp, mg
 from models.elmanmodeleval import ElmanModelEval
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -8,8 +8,16 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 def run(models):
     rgenerator = ReportGenerator('test_report')
     for model in models:
+        print("Evaluating model - " + model.get_name())
+
+        _generate_mg_report(rgenerator, model)
         _generat_M3_report(rgenerator, model)
+
     rgenerator.saveReport()
+
+def _generate_mg_report(rgenerator, model):
+    X_train, X_test, y_train, y_test = mg.create_test_train_split(mg.mackey_glass())
+    rgenerator.generate_report(X_train, X_test, y_train, y_test, model, 'MackeyGlass', model.get_name())
 
 def _generat_M3_report(rgenerator, model):
     dfy = m3comp.load_M3Year()
@@ -37,6 +45,6 @@ def _generat_M3_report(rgenerator, model):
         rgenerator.generate_report(X_train, X_test, y_train, y_test, model, 'M3Other' + column, model.get_name())
 
 if __name__ == "__main__":
-    test = ElmanModelEval()
     models = [ElmanModelEval()]
     run(models)
+    print("All models have been evaluated")
