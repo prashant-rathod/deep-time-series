@@ -23,14 +23,26 @@ class ReportGenerator():
         self.df = self.df.append(row, ignore_index=True)
 
     def generate_report(self, X_train, X_test, y_train, y_test, model, series_name, model_name):
+        if model.has_generator():
+            self.generate_model_report(model, series_name, model_name)
+            return
+
         start = time.clock()
 
         model.train(X_train, y_train)
         predictions = model.predict(X_test)
-        error = self._get_error(y_test, predictions)
 
         time_taken = time.clock() - start
 
+        error = self._get_error(y_test, predictions)
+        self._add_to_report(model_name, series_name, error, time_taken)
+        self._save_plot(y_test, predictions, model_name, series_name)
+        print("Time required to evaluate model - {} on series - {} with error - {} is = {}".format(model_name, series_name, error, time_taken))
+
+    def generate_model_report(self, model, series_name, model_name):
+        time_taken, y_test, predictions = model.generate_report()
+
+        error = self._get_error(y_test, predictions)
         self._add_to_report(model_name, series_name, error, time_taken)
         self._save_plot(y_test, predictions, model_name, series_name)
         print("Time required to evaluate model - {} on series - {} with error - {} is = {}".format(model_name, series_name, error, time_taken))
